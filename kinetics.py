@@ -19,6 +19,7 @@ class Transition:
     rate: Scaler
     start: Integer
     end: Integer
+    order: Scaler = 1.0
 
 @dataclass
 class Parameters:
@@ -53,7 +54,7 @@ def run(parameters : Parameters, time_span : np.ndarray) -> Results:
 
             cap = parameters.capacity[transition.end]
 
-            effective_rate = transition.rate * p_start * (cap - p_end)
+            effective_rate = transition.rate * np.power(p_start, transition.order) * (cap - p_end)
 
             if not (transition.kernel is None):
                 spectral_rate = parameters.excitation(time) * transition.kernel

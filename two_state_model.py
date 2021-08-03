@@ -56,36 +56,36 @@ def two_state_model():
     figure_size = (10, 10)
 
     plt.figure(figsize=figure_size)
-    plt.title("Spectral Overlap")
+    #plt.title("Spectral Overlap")
     plt.plot(energy, kernel, label = "Kernel")
     plt.plot(energy, excitation_spectrum, label = "Excitation")
     plt.xlabel("Energy (eV)")
     plt.ylabel("Intensity")
-    plt.legend()
+    plt.legend(frameon=False)
     plt.savefig("overlap.pdf", dpi=300)
 
 
     plt.figure(figsize=figure_size)
-    plt.title("Max Absorbance vs. Excitation Envelope")
+    #plt.title("Max Absorbance vs. Excitation Envelope")
     plt.plot(results.times, spectral_flux[:, np.argmax(spectral_flux, axis=1)[0]], label="Response")
     plt.plot(results.times, excitation_env(results.times), label="Excitation")
     plt.xlabel("Time (ns)")
     plt.ylabel("Intensity")
-    plt.legend()
+    plt.legend(frameon=False)
     plt.savefig("absorbance.pdf", dpi=300)
 
     plt.figure(figsize=figure_size)
     plot_2d(energy, results.times, spectral_flux)
-    plt.title("Total Spectral Flux")
+   # plt.title("Total Spectral Flux")
     plt.xlabel("Energy (eV)")
     plt.ylabel("Time (ns)")
     plt.savefig("spectral_flux.png", dpi=300)
 
     plt.figure(figsize=figure_size)
-    plt.title("Populations")
+    #plt.title("Populations")
     plt.plot(results.times, results.populations[:, 0], label="Ground State")
     plt.plot(results.times, results.populations[:, 1], label="Excited State")
-    plt.legend()
+    plt.legend(frameon=False)
     plt.savefig("populations.pdf", dpi=300)
 
 
