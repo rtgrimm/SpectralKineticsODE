@@ -1,12 +1,5 @@
 import numpy as np
-from dataclasses import dataclass
-from typing import *
-
-from scipy.constants import Planck, speed_of_light, elementary_charge
-from scipy.integrate import odeint, solve_ivp
-
 import matplotlib.pyplot as plt
-
 from style import set_style
 from kinetics import *
 from util import *
@@ -60,28 +53,17 @@ def three_state():
     probe_spectrum = gaussian(energy, 2.0 - 0.01, 0.1)
     pump_spectrum = gaussian(energy, 2.6 - 0.01, 0.1)
 
-
     pump = lambda t: gaussian(t, 2.0, 0.1)
 
     for tau in tau_list:
-        print(tau)
-
-
         probe = lambda t: gaussian(t, tau, 0.01)
 
         exc_total = lambda t: pump(t) * pump_spectrum + probe(t) * probe_spectrum * 0.1
-
-        #plt.plot(energy, G_A_kernel)
-        #plt.plot(energy, G_C_kernel)
-        #plt.show()
-
         params = Parameters(exc_total, transitions, initial_populations, cap, energy)
 
         results = run(params, time)
 
         spectra.append(np.sum(results.spectral_fluxes, axis=0))
-        #plt.plot(energy, spectra[0])
-        #plt.show()
 
     spectra = np.array(spectra)
 
