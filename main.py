@@ -1,4 +1,5 @@
+from state_tracking_example import state_tracking_example
 from three_state_model import three_state
 
 if __name__ == '__main__':
-    three_state()
+    state_tracking_example()

@@ -33,6 +33,7 @@ class Parameters:
 class Results:
     populations : List[np.ndarray]
     spectral_fluxes : List[np.ndarray]
+    spectral_flux_map: Dict[Tuple[Integer, Integer], np.ndarray]
     fluxes : List[np.ndarray]
     times : np.ndarray
 
@@ -40,13 +41,15 @@ class Results:
 def run(parameters : Parameters, time_span : np.ndarray) -> Results:
 
     def advance(time, population):
-        fluxes, _ = compute_flux(population, time, parameters)
+        fluxes, _, _ = compute_flux(population, time, parameters)
         return fluxes
 
     def compute_flux(population, time, parameters):
         fluxes = np.zeros_like(population)
         spectral_flux_total = np.zeros_like(parameters.energy)
         dlambda = parameters.energy[1] - parameters.energy[0]
+
+        spectral_flux_map = {}
 
         for transition in parameters.transitions:
             p_start = population[transition.start]
@@ -65,29 +68,46 @@ def run(parameters : Parameters, time_span : np.ndarray) -> Results:
                 spectral_flux = np.zeros_like(spectral_flux_total)
                 flux = effective_rate
 
+            spectral_flux_map[(transition.start, transition.end)] = spectral_flux
+
             spectral_flux_total += spectral_flux
             fluxes[transition.start] -= flux
             fluxes[transition.end] += flux
 
-        return fluxes, spectral_flux_total
+        return fluxes, spectral_flux_total, spectral_flux_map
 
     def compute_fluxes(populations, times):
         flux_list = []
         spectral_flux_list = []
+        spectral_flux_maps = []
+
+        spectral_flux_map_all = {}
 
         for pop, time in zip(populations, times):
-            fluxes, spectral_flux_total = compute_flux(pop, time, parameters)
+            fluxes, spectral_flux_total, spectral_flux_map = compute_flux(pop, time, parameters)
 
+            spectral_flux_maps.append(spectral_flux_map)
             flux_list.append(fluxes)
             spectral_flux_list.append(spectral_flux_total)
 
-        return np.array(flux_list), np.array(spectral_flux_list)
+        for map in spectral_flux_maps:
+            for key, value in map.items():
+                if key in spectral_flux_map_all:
+                    spectral_flux_map_all[key].append(value)
+                else:
+                    spectral_flux_map_all[key] = [value]
+
+        for key, value in spectral_flux_map_all.items():
+            spectral_flux_map_all[key] = np.array(value)
+
+
+        return np.array(flux_list), np.array(spectral_flux_list), spectral_flux_map_all
 
     sol = solve_ivp(advance, (np.min(time_span), np.max(time_span)),
                      parameters.initial_population,
                     dense_output=True, t_eval=time_span, method="Radau")
 
     pop = np.transpose(sol.y)
-    flux_list, spectral_flux_list = compute_fluxes(pop, sol.t)
+    flux_list, spectral_flux_list, spectral_flux_map = compute_fluxes(pop, sol.t)
 
-    return Results(pop, spectral_flux_list, flux_list, sol.t)
+    return Results(pop, spectral_flux_list, spectral_flux_map, flux_list, sol.t)
